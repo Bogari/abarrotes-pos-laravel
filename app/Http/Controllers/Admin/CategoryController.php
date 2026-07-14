@@ -59,18 +59,35 @@ class CategoryController extends Controller
         return view('admin.categories.edit', compact('category'));
     }
 
-    public function update(Request $request, Category $category): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                'unique:categories,name,' . $category->id,
-            ],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'active' => ['nullable', 'boolean'],
-        ]);
+public function update(
+    UpdateCategoryRequest $request,
+    Category $category
+): RedirectResponse {
+    $data = $request->validated();
+
+    $category->update([
+        'name' => $data['name'],
+        'slug' => Str::slug($data['name']),
+        'description' => $data['description'] ?? null,
+        'active' => $request->boolean('active'),
+    ]);
+
+    return redirect()
+        ->route('admin.categories.index')
+        ->with('success', 'Categoría actualizada correctamente.');
+
+
+$category->update([
+
+    'name' => $data['name'],
+
+    'slug' => Str::slug($data['name']),
+
+    'description' => $data['description'] ?? null,
+
+    'active' => $request->boolean('active'),
+
+]);
 
         $category->update([
             'name' => $validated['name'],
