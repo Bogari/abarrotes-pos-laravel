@@ -31,3 +31,11 @@
 - Eliminación con confirmación
 - Validaciones
 - Mensajes de éxito
+
+## Dashboard dinámico
+
+- Se creó DashboardController.
+- Las consultas dejaron de estar en routes/web.php.
+- El dashboard muestra estadísticas reales.
+- Se cuentan categorías, marcas y productos.
+- Se detectan productos con stock bajo comparando columnas.
