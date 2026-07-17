@@ -22,4 +22,9 @@ class Brand extends Model
             'active' => 'boolean',
         ];
     }
+
+    public function products(): HasMany
+{
+    return $this->hasMany(Product::class);
+}
 }

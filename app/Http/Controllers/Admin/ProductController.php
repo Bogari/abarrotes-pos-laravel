@@ -3,63 +3,222 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Product;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request): View
     {
-        //
+        $search = $request->string('search')->trim()->toString();
+        $category = $request->integer('category');
+        $brand = $request->integer('brand');
+        $status = $request->string('status')->toString();
+        $stockStatus = $request->string('stock_status')->toString();
+
+        $products = Product::query()
+            ->with(['category', 'brand'])
+
+            ->when($search, function ($query, $search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhere('barcode', 'like', "%{$search}%");
+                });
+            })
+
+            ->when($category, function ($query) use ($category) {
+                $query->where('category_id', $category);
+            })
+
+            ->when($brand, function ($query) use ($brand) {
+                $query->where('brand_id', $brand);
+            })
+
+            ->when($status === 'active', function ($query) {
+                $query->where('active', true);
+            })
+
+            ->when($status === 'inactive', function ($query) {
+                $query->where('active', false);
+            })
+
+            ->when($stockStatus === 'low', function ($query) {
+                $query
+                    ->where('stock', '>', 0)
+                    ->whereColumn('stock', '<=', 'minimum_stock');
+            })
+
+            ->when($stockStatus === 'available', function ($query) {
+                $query->whereColumn('stock', '>', 'minimum_stock');
+            })
+
+            ->when($stockStatus === 'out', function ($query) {
+                $query->where('stock', '<=', 0);
+            })
+
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $categories = Category::query()
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+
+        $brands = Brand::query()
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+$stats = [
+
+    'total' => Product::count(),
+
+    'active' => Product::where('active', true)->count(),
+
+    'low_stock' => Product::whereColumn('stock', '<=', 'minimum_stock')
+        ->where('stock', '>', 0)
+        ->count(),
+
+    'out_stock' => Product::where('stock', '<=', 0)
+        ->count(),
+
+];
+
+        return view('admin.products.index', compact(
+            'products',
+            'categories',
+            'brands',
+            'search',
+            'category',
+            'brand',
+            'status',
+            'stockStatus',
+            'stats'
+        ));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): View
     {
-        //
+        $categories = Category::query()
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+
+        $brands = Brand::query()
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.products.create', compact(
+            'categories',
+            'brands'
+        ));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    public function store(
+        StoreProductRequest $request
+    ): RedirectResponse {
+        $data = $request->validated();
+
+        Product::create([
+            'code' => $data['code'],
+            'barcode' => $data['barcode'] ?? null,
+            'name' => $data['name'],
+            'slug' => Str::slug($data['name']),
+            'description' => $data['description'] ?? null,
+            'category_id' => $data['category_id'],
+            'brand_id' => $data['brand_id'] ?? null,
+            'purchase_price' => $data['purchase_price'],
+            'sale_price' => $data['sale_price'],
+            'stock' => $data['stock'],
+            'minimum_stock' => $data['minimum_stock'],
+            'active' => $request->boolean('active'),
+        ]);
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Producto creado correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+    public function show(
+        Product $product
+    ): RedirectResponse {
+        return redirect()
+            ->route('admin.products.edit', $product);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+    public function edit(
+        Product $product
+    ): View {
+        $categories = Category::query()
+            ->where(function ($query) use ($product) {
+                $query
+                    ->where('active', true)
+                    ->orWhere('id', $product->category_id);
+            })
+            ->orderBy('name')
+            ->get();
+
+        $brands = Brand::query()
+            ->where(function ($query) use ($product) {
+                $query->where('active', true);
+
+                if ($product->brand_id) {
+                    $query->orWhere('id', $product->brand_id);
+                }
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.products.edit', compact(
+            'product',
+            'categories',
+            'brands'
+        ));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+    public function update(
+        UpdateProductRequest $request,
+        Product $product
+    ): RedirectResponse {
+        $data = $request->validated();
+
+        $product->update([
+            'code' => $data['code'],
+            'barcode' => $data['barcode'] ?? null,
+            'name' => $data['name'],
+            'slug' => Str::slug($data['name']),
+            'description' => $data['description'] ?? null,
+            'category_id' => $data['category_id'],
+            'brand_id' => $data['brand_id'] ?? null,
+            'purchase_price' => $data['purchase_price'],
+            'sale_price' => $data['sale_price'],
+            'stock' => $data['stock'],
+            'minimum_stock' => $data['minimum_stock'],
+            'active' => $request->boolean('active'),
+        ]);
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Producto actualizado correctamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+    public function destroy(
+        Product $product
+    ): RedirectResponse {
+        $product->delete();
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Producto eliminado correctamente.');
     }
 }
