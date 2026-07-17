@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\InventoryMovementController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -32,5 +33,20 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('brands', BrandController::class);
 
     Route::resource('products', ProductController::class);
+
+    Route::get(
+    'inventory',
+    [InventoryMovementController::class, 'index']
+)->name('inventory.index');
+
+Route::get(
+    'inventory/create',
+    [InventoryMovementController::class, 'create']
+)->name('inventory.create');
+
+Route::post(
+    'inventory',
+    [InventoryMovementController::class, 'store']
+)->name('inventory.store');
 
 });

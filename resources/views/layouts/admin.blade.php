@@ -81,12 +81,16 @@
                 <span>Marcas</span>
             </a>
 
-            <a href="#"
-               class="mb-1 flex items-center gap-3 rounded-lg px-3 py-3 text-slate-300 hover:bg-slate-900 hover:text-white">
+            <a href="{{ route('admin.inventory.index') }}"
+   class="mb-1 flex items-center gap-3 rounded-lg px-3 py-3 transition
+   {{ request()->routeIs('admin.inventory.*')
+       ? 'bg-emerald-500 text-white'
+       : 'text-slate-300 hover:bg-slate-900 hover:text-white' }}">
 
-                <i data-lucide="warehouse" class="h-5 w-5"></i>
-                <span>Existencias</span>
-            </a>
+    <i data-lucide="boxes" class="h-5 w-5"></i>
+
+    <span>Existencias</span>
+</a>
 
             <p class="mb-3 mt-7 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Operaciones
