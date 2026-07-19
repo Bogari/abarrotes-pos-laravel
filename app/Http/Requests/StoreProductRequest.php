@@ -66,11 +66,6 @@ class StoreProductRequest extends FormRequest
                 'gte:purchase_price',
             ],
 
-            'stock' => [
-                'required',
-                'numeric',
-                'min:0',
-            ],
 
             'minimum_stock' => [
                 'required',

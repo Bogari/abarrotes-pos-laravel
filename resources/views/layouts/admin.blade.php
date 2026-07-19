@@ -109,6 +109,16 @@
                 <i data-lucide="truck" class="h-5 w-5"></i>
                 <span>Compras</span>
             </a>
+            <a
+    href="{{ route('admin.suppliers.index') }}"
+    class="{{ request()->routeIs('admin.suppliers.*')
+        ? 'bg-emerald-500 text-white'
+        : 'text-slate-200 hover:bg-slate-800 hover:text-white' }}
+        flex items-center gap-3 rounded-lg px-3 py-3 transition"
+>
+    <i data-lucide="truck" class="h-5 w-5"></i>
+    <span>Proveedores</span>
+</a>
 
             <a href="#"
                class="mb-1 flex items-center gap-3 rounded-lg px-3 py-3 text-slate-300 hover:bg-slate-900 hover:text-white">

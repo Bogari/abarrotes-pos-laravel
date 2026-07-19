@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\PurchaseController;
 
 Route::get('/test', function () {
     return 'Laravel funciona';
@@ -32,7 +34,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     Route::resource('brands', BrandController::class);
 
+    Route::post(
+    'products/quick-store',
+    [ProductController::class, 'quickStore']
+)->name('products.quick-store');
+
     Route::resource('products', ProductController::class);
+
+    Route::resource('suppliers', SupplierController::class);
+
+    Route::resource('purchases', PurchaseController::class);
 
     Route::get(
     'inventory',

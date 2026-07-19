@@ -146,23 +146,22 @@
     </div>
 
     <div>
-        <label for="stock" class="mb-2 block font-medium">
-            Existencia
-        </label>
+    <label for="stock" class="block text-sm font-medium text-gray-700">
+        Existencia actual
+    </label>
 
-        <input type="number"
-               id="stock"
-               name="stock"
-               value="{{ old('stock', $product?->stock ?? 0) }}"
-               min="0"
-               step="0.01"
-               class="w-full rounded-lg border-gray-300"
-               required>
+    <input
+        id="stock"
+        type="number"
+        value="{{ $product->stock ?? 0 }}"
+        class="mt-1 block w-full rounded-lg border-gray-300 bg-gray-100 text-gray-600 shadow-sm"
+        readonly
+    >
 
-        @error('stock')
-            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-        @enderror
-    </div>
+    <p class="mt-2 text-xs text-gray-500">
+        La existencia se actualiza únicamente mediante movimientos de inventario.
+    </p>
+</div>
 
     <div>
         <label for="minimum_stock" class="mb-2 block font-medium">

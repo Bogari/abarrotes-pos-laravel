@@ -30,6 +30,10 @@ class Product extends Model
 {
     return $this->hasMany(InventoryMovement::class);
 }
+public function purchaseItems(): HasMany
+{
+    return $this->hasMany(PurchaseItem::class);
+}
 
     protected function casts(): array
     {

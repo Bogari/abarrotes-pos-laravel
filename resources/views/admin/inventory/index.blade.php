@@ -175,4 +175,149 @@
     </form>
 
 </div>
+
+{{-- Tabla Kardex --}}
+<div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+
+    <table class="w-full min-w-[920px] table-fixed">
+
+        <thead class="bg-gray-50">
+    <tr class="text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+
+        <th class="w-32 px-4 py-3">Fecha</th>
+        <th class="w-48 px-4 py-3">Producto</th>
+        <th class="w-20 px-4 py-3 text-center">Tipo</th>
+        <th class="w-20 px-4 py-3 text-right">Cantidad</th>
+        <th class="w-16 px-4 py-3 text-right">Antes</th>
+        <th class="w-16 px-4 py-3 text-right">Después</th>
+        <th class="w-28 px-4 py-3">Usuario</th>
+        <th class="w-28 px-4 py-3">Referencia</th>
+        <th class="w-40 px-4 py-3">Motivo</th>
+
+    </tr>
+</thead>
+
+        <tbody class="divide-y divide-gray-100 bg-white">
+
+            @forelse($movements as $movement)
+
+                <tr class="hover:bg-gray-50">
+
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        {{ $movement->created_at->format('d/m/Y H:i') }}
+                    </td>
+
+                    <td class="px-4 py-3">
+                        <div class="font-medium text-gray-900">
+                            {{ $movement->product->name }}
+                        </div>
+
+                        <div class="text-xs text-gray-500">
+                            {{ $movement->product->code }}
+                        </div>
+                    </td>
+
+                    <td class="px-4 py-3 text-center">
+
+                        @switch($movement->type)
+
+                            @case('entry')
+                                <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                    Entrada
+                                </span>
+                                @break
+
+                            @case('exit')
+                                <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                                    Salida
+                                </span>
+                                @break
+
+                            @case('adjustment')
+                                <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                                    Ajuste
+                                </span>
+                                @break
+
+                        @endswitch
+
+                    </td>
+
+<td class="px-4 py-3 text-right font-semibold">
+
+    @if ($movement->type === 'entry')
+
+        <span class="text-green-600">
+            +{{ number_format($movement->quantity, 2) }}
+        </span>
+
+    @elseif ($movement->type === 'exit')
+
+        <span class="text-red-600">
+            -{{ number_format($movement->quantity, 2) }}
+        </span>
+
+    @else
+
+        @php
+            $difference = (float) $movement->stock_after
+                - (float) $movement->stock_before;
+        @endphp
+
+        <span class="{{ $difference >= 0 ? 'text-amber-600' : 'text-red-600' }}">
+            {{ $difference >= 0 ? '+' : '' }}{{ number_format($difference, 2) }}
+        </span>
+
+    @endif
+
+</td>
+
+                    <td class="px-4 py-3 text-right">
+                        {{ number_format($movement->stock_before, 2) }}
+                    </td>
+
+                    <td class="px-4 py-3 text-right">
+                        {{ number_format($movement->stock_after, 2) }}
+                    </td>
+
+                    <td class="px-4 py-3">
+                        {{ $movement->user?->name ?? 'Sistema' }}
+                    </td>
+
+                    <td class="px-4 py-3">
+                        {{ $movement->reference ?? '-' }}
+                    </td>
+<td class="px-4 py-3">
+    <div class="max-w-[220px] truncate"
+         title="{{ $movement->reason }}">
+        {{ $movement->reason }}
+    </div>
+</td>
+
+                </tr>
+
+            @empty
+
+                <tr>
+
+                    <td colspan="9"
+                        class="px-6 py-12 text-center text-gray-500">
+
+                        No hay movimientos registrados.
+
+                    </td>
+
+                </tr>
+
+            @endforelse
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<div class="mt-6">
+    {{ $movements->links() }}
+</div>
 @endsection

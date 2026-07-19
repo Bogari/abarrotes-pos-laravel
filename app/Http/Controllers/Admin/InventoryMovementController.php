@@ -76,15 +76,26 @@ return view('admin.inventory.index', compact(
 ));
     }
 
-    public function create(): View
-    {
-        $products = Product::query()
-            ->where('active', true)
-            ->orderBy('name')
-            ->get();
+    public function create(Request $request): View
+{
+    $products = Product::query()
+        ->where('active', true)
+        ->orderBy('name')
+        ->get();
 
-        return view('admin.inventory.create', compact('products'));
+    $selectedProduct = null;
+
+    if ($request->filled('product')) {
+
+        $selectedProduct = Product::find($request->integer('product'));
+
     }
+
+    return view('admin.inventory.create', compact(
+        'products',
+        'selectedProduct'
+    ));
+}
 
     public function store(
         StoreInventoryMovementRequest $request

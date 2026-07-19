@@ -12,9 +12,15 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
+use App\Services\ProductService;
 
 class ProductController extends Controller
 {
+    public function __construct(
+    private readonly ProductService $productService
+) {
+}
     public function index(Request $request): View
     {
         $search = $request->string('search')->trim()->toString();
@@ -129,25 +135,36 @@ $stats = [
     ): RedirectResponse {
         $data = $request->validated();
 
-        Product::create([
-            'code' => $data['code'],
-            'barcode' => $data['barcode'] ?? null,
-            'name' => $data['name'],
-            'slug' => Str::slug($data['name']),
-            'description' => $data['description'] ?? null,
-            'category_id' => $data['category_id'],
-            'brand_id' => $data['brand_id'] ?? null,
-            'purchase_price' => $data['purchase_price'],
-            'sale_price' => $data['sale_price'],
-            'stock' => $data['stock'],
-            'minimum_stock' => $data['minimum_stock'],
-            'active' => $request->boolean('active'),
-        ]);
+       $this->productService->create(
+    data: $data,
+    active: $request->boolean('active')
+);
 
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Producto creado correctamente.');
     }
+
+    public function quickStore(
+    StoreProductRequest $request
+): JsonResponse {
+    $product = $this->productService->create(
+        data: $request->validated(),
+        active: $request->boolean('active')
+    );
+
+    return response()->json([
+        'message' => 'Producto creado correctamente.',
+        'product' => [
+            'id' => $product->id,
+            'code' => $product->code,
+            'barcode' => $product->barcode,
+            'name' => $product->name,
+            'purchase_price' => $product->purchase_price,
+            'stock' => $product->stock,
+        ],
+    ], 201);
+}
 
     public function show(
         Product $product
@@ -202,7 +219,6 @@ $stats = [
             'brand_id' => $data['brand_id'] ?? null,
             'purchase_price' => $data['purchase_price'],
             'sale_price' => $data['sale_price'],
-            'stock' => $data['stock'],
             'minimum_stock' => $data['minimum_stock'],
             'active' => $request->boolean('active'),
         ]);

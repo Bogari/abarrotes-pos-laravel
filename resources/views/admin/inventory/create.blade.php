@@ -83,18 +83,20 @@
                         Selecciona un producto
                     </option>
 
-                    @foreach ($products as $product)
+@foreach ($products as $product)
 
-                        <option value="{{ $product->id }}"
-                            @selected(old('product_id') == $product->id)>
+    <option value="{{ $product->id }}"
+        @selected(
+            old('product_id', $selectedProduct?->id) == $product->id
+        )>
 
-                            {{ $product->name }}
-                            — Código: {{ $product->code }}
-                            — Stock: {{ number_format($product->stock, 2) }}
+        {{ $product->name }}
+        — Código: {{ $product->code }}
+        — Stock: {{ number_format($product->stock, 2) }}
 
-                        </option>
+    </option>
 
-                    @endforeach
+@endforeach
 
                 </select>
 

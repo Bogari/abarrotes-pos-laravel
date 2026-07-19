@@ -13,7 +13,7 @@
         </h2>
 
         <p class="mt-1 text-sm text-gray-500">
-            Captura la información comercial y las existencias iniciales.
+            Captura la información comercial del producto.
         </p>
     </div>
 
